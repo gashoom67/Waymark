@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Waymark</title>
+  <meta name="description" content="Trace multi-hop links across long PDFs and images.">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header class="bar">
+    <button class="icon-btn only-narrow" id="toggle-library" aria-label="Show library" aria-expanded="false">
+      <svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <a class="brand" href="/" aria-label="Waymark home">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><path d="M3 24c5-6 9-6 13-2s8 4 13-2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16 4v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16 5l8 3-8 3z" fill="var(--landmark)"/></svg>
+      <span>Waymark</span>
+    </a>
+    <div class="bar-stats" id="stats" aria-live="polite"></div>
+    <button class="icon-btn" id="theme" aria-label="Switch colour theme">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <div class="shell">
+    <aside class="library" id="library" aria-label="Library">
+      <div class="library-head">
+        <label class="field-label" for="collection">Collection</label>
+        <div class="collection-row">
+          <select id="collection"></select>
+          <button class="icon-btn" id="new-collection" aria-label="New collection" title="New collection">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-btn" id="delete-collection" aria-label="Delete collection" title="Delete collection">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <label class="drop" id="drop" tabindex="0">
+        <input type="file" id="file-input" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff,.gif,.txt,.md">
+        <strong>Add files</strong>
+        <span>PDF, images or plain text. Drop them here or browse.</span>
+      </label>
+      <ul class="docs" id="docs" aria-live="polite"></ul>
+      <p class="docs-empty" id="docs-empty">Nothing here yet. Add a few PDFs and ask how the ideas in them connect.</p>
+    </aside>
+
+    <main class="workspace">
+      <form class="ask" id="ask-form" autocomplete="off">
+        <label class="sr-only" for="question">Question</label>
+        <textarea id="question" rows="2" maxlength="600" placeholder="Ask something that needs more than one page to answer"></textarea>
+        <div class="ask-row">
+          <div class="hops">
+            <label for="hops">Max hops</label>
+            <input type="range" id="hops" min="1" max="6" value="4">
+            <output id="hops-out" for="hops">4</output>
+          </div>
+          <button type="submit" class="primary" id="ask-btn">Trace</button>
+        </div>
+        <div class="suggestions" id="suggestions"></div>
+      </form>
+
+      <section class="result" id="result" hidden>
+        <div class="answer" id="answer"></div>
+        <div class="anchors" id="anchors"></div>
+        <section class="trail-wrap" aria-labelledby="trail-title">
+          <h2 id="trail-title">Trail</h2>
+          <ol class="trail" id="trail"></ol>
+          <details class="alt-trails" id="alt-trails" hidden>
+            <summary>Other trails considered</summary>
+            <div id="alt-list"></div>
+          </details>
+        </section>
+        <nav class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-tab="evidence" id="tab-evidence">Evidence</button>
+          <button role="tab" aria-selected="false" data-tab="map" id="tab-map">Map</button>
+          <button role="tab" aria-selected="false" data-tab="entities" id="tab-entities">Entities</button>
+        </nav>
+        <div class="panel" data-panel="evidence" id="panel-evidence" role="tabpanel" aria-labelledby="tab-evidence"></div>
+        <div class="panel" data-panel="map" id="panel-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+          <div class="map-frame"><canvas id="map" aria-label="Entity map"></canvas></div>
+          <p class="map-hint">Drag to move a point. Click one to open it.</p>
+        </div>
+        <div class="panel" data-panel="entities" id="panel-entities" role="tabpanel" aria-labelledby="tab-entities" hidden></div>
+      </section>
+
+      <section class="explore" id="explore">
+        <div class="explore-head">
+          <h2>Entities in this collection</h2>
+          <input type="search" id="entity-search" placeholder="Find a person, place, term…" aria-label="Find an entity">
+        </div>
+        <ul class="entity-list" id="entity-list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="sheet" id="sheet">
+    <div class="sheet-head">
+      <h3 id="sheet-title"></h3>
+      <button class="icon-btn" id="sheet-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

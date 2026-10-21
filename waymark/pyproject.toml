@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "waymark"
+version = "1.0.0"
+description = "Multi-hop GraphRAG reader for long PDFs and images, built on classical NLP instead of an LLM"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "fastapi>=0.110,<1.0",
+    "uvicorn[standard]>=0.29",
+    "python-multipart>=0.0.9",
+    "spacy>=3.8,<3.9",
+    "pymupdf>=1.24.3",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "rapidfuzz>=3.6",
+    "pillow>=10.2",
+    "rapidocr>=3.10,<4",
+    "onnxruntime>=1.19",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "httpx>=0.27"]
+
+[project.scripts]
+waymark = "waymark.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["waymark*"]
+
+[tool.setuptools.package-data]
+waymark = ["web/*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning", "ignore:Using `httpx`"]

@@ -1,0 +1,12 @@
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+spacy>=3.8,<3.9
+en_core_web_md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl
+pymupdf>=1.24.3
+numpy>=1.26
+scipy>=1.11
+rapidfuzz>=3.6
+pillow>=10.2
+rapidocr>=3.10,<4
+onnxruntime>=1.19
